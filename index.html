@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Advanced Biomedical Research Suite - Professional computational biology platform">
+  <meta name="author" content="David Smith">
+  <title>BioMed Research Suite Ultimate v3.0 - Professional Edition</title>
+  
+  <!-- React & Dependencies -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    /* ENHANCED DESIGN SYSTEM V3.0 */
+    :root {
+      --primary: #667eea; --primary-dark: #5568d3; --secondary: #764ba2;
+      --accent: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+      --bg-primary: #0a0e1a; --bg-secondary: #111827; --bg-card: rgba(31, 41, 55, 0.8);
+      --text-primary: #f9fafb; --text-secondary: #d1d5db; --text-muted: #9ca3af;
+      --border: rgba(75, 85, 99, 0.3); --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.3); --transition: 250ms ease;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 50%, var(--bg-primary) 100%);
+      color: var(--text-primary); line-height: 1.6; min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    .app-header {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow);
+    }
+    .header-content {
+      max-width: 1400px; margin: 0 auto; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 1rem; }
+    .brand-icon { font-size: 3rem; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .brand-text h1 {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 0.25rem;
+    }
+    .brand-text p { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; }
+    .status-bar { display: flex; align-items: center; gap: 1.5rem; }
+    .status-item {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
+      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 50px; font-size: 0.875rem; font-weight: 600;
+    }
+    .status-dot {
+      width: 8px; height: 8px; background: var(--success);
+      border-radius: 50%; animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .module-selector {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-bottom: 3rem;
+    }
+    .module-btn {
+      background: var(--bg-card); backdrop-filter: blur(10px);
+      border: 2px solid var(--border); border-radius: 0.75rem; padding: 2rem;
+      cursor: pointer; transition: all var(--transition); text-align: left;
+      position: relative; overflow: hidden;
+    }
+    .module-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      opacity: 0; transition: opacity var(--transition);
+    }
+    .module-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+      border-color: var(--primary);
+    }
+    .module-btn:hover::before { opacity: 0.1; }
+    .module-btn.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+      box-shadow: var(--shadow-glow);
+    }
+    .module-icon { font-size: 3rem; margin-bottom: 1rem; display: block; position: relative; z-index: 1; }
+    .module-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem; position: relative; z-index: 1; }
+    .module-desc { font-size: 0.875rem; color: var(--text-muted); position: relative; z-index: 1; }
+    .card {
+      background: var(--bg-card); backdrop-filter: blur(10px);
+      border: 1px solid var(--border); border-radius: 0.75rem; padding: 2rem;
+      margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all var(--transition);
+    }
+    .card:hover { border-color: rgba(107, 114, 128, 0.5); box-shadow: var(--shadow); }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);
+    }
+    .card-title { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .btn {
+      padding: 0.5rem 1.5rem; border: none; border-radius: 0.5rem;
+      font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+      transition: all var(--transition); display: inline-flex;
+      align-items: center; gap: 0.5rem;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #5568d3 100%);
+      color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+      color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+    .btn-secondary {
+      background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);
+    }
+    .btn-secondary:hover:not(:disabled) { background: rgba(107, 114, 128, 0.1); }
+    .btn-sm { padding: 0.25rem 1rem; font-size: 0.875rem; }
+    .btn-lg { padding: 1rem 2rem; font-size: 1.125rem; }
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label {
+      display: block; font-weight: 600; color: var(--text-secondary);
+      margin-bottom: 0.5rem; font-size: 0.9375rem;
+    }
+    .form-input, .form-select {
+      width: 100%; padding: 0.5rem 1rem; background: var(--bg-secondary);
+      border: 1px solid var(--border); border-radius: 0.5rem;
+      color: var(--text-primary); font-size: 0.9375rem; transition: all var(--transition);
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-range {
+      width: 100%; height: 6px; background: var(--bg-secondary);
+      border-radius: 50px; outline: none; -webkit-appearance: none;
+    }
+    .form-range::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px; background: var(--primary);
+      border-radius: 50%; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 1.5rem; text-align: center;
+      transition: all var(--transition); position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      transform: scaleX(0); transition: transform var(--transition);
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4); }
+    .stat-card:hover::before { transform: scaleX(1); }
+    .stat-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .stat-value {
+      font-size: 2rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+    .stat-label {
+      font-size: 0.875rem; color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .alert {
+      padding: 1rem 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;
+      border-left: 4px solid; display: flex; align-items: flex-start; gap: 1rem;
+    }
+    .alert-info { background: rgba(59, 130, 246, 0.1); border-color: var(--accent); }
+    .alert-success { background: rgba(16, 185, 129, 0.1); border-color: var(--success); }
+    .alert-warning { background: rgba(245, 158, 11, 0.1); border-color: var(--warning); }
+    .alert-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .progress-container { margin-bottom: 1.5rem; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .progress-label { font-weight: 600; color: var(--text-secondary); }
+    .progress-percentage { font-weight: 700; color: var(--primary); }
+    .progress-bar-container {
+      width: 100%; height: 12px; background: var(--bg-secondary);
+      border-radius: 50px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .progress-bar {
+      height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #7c93ee 100%);
+      border-radius: 50px; transition: width 0.5s ease;
+      position: relative; overflow: hidden;
+    }
+    .progress-bar::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .tabs {
+      display: flex; gap: 0.25rem; margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border); overflow-x: auto;
+    }
+    .tab {
+      padding: 1rem 1.5rem; background: transparent; border: none;
+      color: var(--text-muted); font-weight: 600; cursor: pointer;
+      transition: all var(--transition); border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text-secondary); background: rgba(107, 114, 128, 0.1); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tab-badge {
+      background: var(--primary); color: white; padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem; font-size: 0.75rem; margin-left: 0.5rem;
+    }
+    .table-container {
+      overflow-x: auto; border-radius: 0.75rem; border: 1px solid var(--border); margin-bottom: 1.5rem;
+    }
+    .table { width: 100%; border-collapse: collapse; }
+    .table thead { background: var(--bg-secondary); }
+    .table th {
+      padding: 1rem; text-align: left; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      font-size: 0.875rem; border-bottom: 2px solid var(--border);
+    }
+    .table td {
+      padding: 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary);
+    }
+    .table tbody tr:hover { background: rgba(107, 114, 128, 0.1); }
+    .badge {
+      display: inline-flex; align-items: center; padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem; font-size: 0.8125rem; font-weight: 600;
+    }
+    .badge-success {
+      background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .badge-primary {
+      background: rgba(102, 126, 234, 0.2); color: #7c93ee; border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    .spinner {
+      border: 3px solid rgba(102, 126, 234, 0.2); border-top-color: var(--primary);
+      border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-container {
+      display: flex; flex-direction: column; align-items: center; padding: 3rem; gap: 1.5rem;
+    }
+    .grid { display: grid; gap: 1.5rem; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+    .canvas-container {
+      position: relative; background: var(--bg-secondary); border-radius: 0.75rem;
+      overflow: hidden; border: 2px solid var(--border);
+      margin-bottom: 1.5rem; box-shadow: var(--shadow);
+    }
+    .canvas-container canvas { display: block; width: 100%; height: auto; }
+    .workflow-nav {
+      margin-bottom: 3rem; padding: 2rem; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 0.75rem;
+    }
+    .workflow-steps {
+      display: flex; justify-content: space-between; align-items: center; position: relative;
+    }
+    .workflow-steps::before {
+      content: ''; position: absolute; top: 25px; left: 50px; right: 50px;
+      height: 3px; background: var(--border); z-index: 0;
+    }
+    .workflow-step {
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      cursor: pointer; position: relative; z-index: 1; flex: 1;
+    }
+    .step-circle {
+      width: 50px; height: 50px; border-radius: 50%; background: var(--bg-secondary);
+      border: 3px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 1.25rem;
+      color: var(--text-muted); transition: all var(--transition);
+    }
+    .workflow-step.active .step-circle {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-color: var(--primary); color: white;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.6); transform: scale(1.1);
+    }
+    .workflow-step.completed .step-circle {
+      background: var(--success); border-color: var(--success); color: white;
+    }
+    .step-label {
+      font-weight: 600; color: var(--text-muted); text-align: center; font-size: 0.875rem;
+    }
+    .workflow-step.active .step-label { color: var(--primary); }
+    .info-panel {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 0.75rem;
+      padding: 2rem; margin-bottom: 2rem;
+    }
+    .info-panel h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .info-panel p { color: var(--text-muted); }
+    @media (max-width: 768px) {
+      .brand-text p { display: none; }
+      .module-selector { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      .workflow-steps { flex-direction: column; }
+      .workflow-steps::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+const VideoSimulationModule = () => {
+  const [simulationType, setSimulationType] = useState('molecular');
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(50);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [totalFrames] = useState(300);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+  const recordingStartTime = useRef(null);
+
+  const simulationTypes = {
+    molecular: {
+      name: 'Molecular Dynamics',
+      description: 'Multi-particle systems with real-time interactions',
+      icon: '⚛️'
+    },
+    membrane: {
+      name: 'Membrane Transport',
+      description: 'Lipid bilayer with active transport visualization',
+      icon: '🧫'
+    },
+    transcription: {
+      name: 'Gene Transcription',
+      description: 'DNA-to-RNA transcription with RNA polymerase',
+      icon: '🧬'
+    },
+    mitosis: {
+      name: 'Cell Division (Mitosis)',
+      description: 'Complete cell cycle visualization',
+      icon: '🔬'
+    },
+    immune: {
+      name: 'Immune Response',
+      description: 'Pathogen-T cell-antibody interactions',
+      icon: '🦠'
+    },
+    neuron: {
+      name: 'Neuronal Signaling',
+      description: 'Action potential propagation',
+      icon: '⚡'
+    }
+  };
+
+  const startSimulation = () => {
+    setIsSimulating(true);
+    setCurrentFrame(0);
+    animateSimulation();
+  };
+
+  const stopSimulation = () => {
+    setIsSimulating(false);
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    if (isRecording) {
+      stopRecording();
+    }
+  };
+
+  const startRecording = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const stream = canvas.captureStream(30);
+    const recorder = new MediaRecorder(stream, {
+      mimeType: 'video/webm;codecs=vp9'
+    });
+
+    const chunks = [];
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        chunks.push(e.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      setRecordedChunks(chunks);
+    };
+
+    recorder.start(100);
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+    recordingStartTime.current = Date.now();
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    setIsRecording(false);
+  };
+
+  const downloadVideo = () => {
+    if (recordedChunks.length === 0) return;
+
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `biomedical_simulation_${simulationType}_${Date.now()}.webm`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const animateSimulation = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear with gradient background
+    const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width / 2);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#0f0f1e');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw based on simulation type
+    switch(simulationType) {
+      case 'molecular':
+        drawMolecularDynamics(ctx, width, height, currentFrame);
+        break;
+      case 'membrane':
+        drawMembraneTransport(ctx, width, height, currentFrame);
+        break;
+      case 'transcription':
+        drawTranscription(ctx, width, height, currentFrame);
+        break;
+      case 'mitosis':
+        drawMitosis(ctx, width, height, currentFrame);
+        break;
+      case 'immune':
+        drawImmuneResponse(ctx, width, height, currentFrame);
+        break;
+      case 'neuron':
+        drawNeuronSignaling(ctx, width, height, currentFrame);
+        break;
+    }
+
+    setCurrentFrame(prev => (prev + 1) % totalFrames);
+
+    if (isRecording) {
+      const duration = (Date.now() - recordingStartTime.current) / 1000;
+      setRecordingDuration(duration);
+    }
+
+    const delay = 100 - animationSpeed;
+    setTimeout(() => {
+      if (isSimulating) {
+        animationRef.current = requestAnimationFrame(animateSimulation);
+      }
+    }, delay);
+  };
+
+  useEffect(() => {
+    if (isSimulating) {
+      animateSimulation();
+    }
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isSimulating, simulationType, animationSpeed, currentFrame]);
+
+  // Drawing functions
+  const drawMolecularDynamics = (ctx, width, height, frame) => {
+    const particles = 50;
+    const time = frame / 60;
+    
+    for (let i = 0; i < particles; i++) {
+      const angle = (i / particles) * Math.PI * 2 + time;
+      const radius = 200 + Math.sin(time + i) * 100;
+      const x = width / 2 + Math.cos(angle) * radius;
+      const y = height / 2 + Math.sin(angle) * radius;
+      
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, 10);
+      gradient.addColorStop(0, `hsl(${(i * 360 / particles + frame) % 360}, 70%, 60%)`);
+      gradient.addColorStop(1, `hsl(${(i * 360 / particles + frame) % 360}, 70%, 30%)`);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      
+      for (let j = i + 1; j < Math.min(i + 3, particles); j++) {
+        const angle2 = (j / particles) * Math.PI * 2 + time;
+        const radius2 = 200 + Math.sin(time + j) * 100;
+        const x2 = width / 2 + Math.cos(angle2) * radius2;
+        const y2 = height / 2 + Math.sin(angle2) * radius2;
+        
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+    }
+  };
+
+  const drawMembraneTransport = (ctx, width, height, frame) => {
+    const membraneY = height / 2;
+    
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(0, membraneY);
+    ctx.lineTo(width, membraneY);
+    ctx.stroke();
+    
+    for (let x = 0; x < width; x += 40) {
+      ctx.fillStyle = '#059669';
+      ctx.beginPath();
+      ctx.arc(x, membraneY - 20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 20, membraneY + 20, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    const proteins = 5;
+    for (let i = 0; i < proteins; i++) {
+      const x = (i + 0.5) * (width / proteins);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(x - 20, membraneY - 40, 40, 80);
+    }
+    
+    const moleculeX = (frame % 120) * (width / 120);
+    const moleculeY = frame < 60 ? membraneY - 100 : membraneY + 100;
+    
+    const gradient = ctx.createRadialGradient(moleculeX, moleculeY, 0, moleculeX, moleculeY, 15);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#d97706');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(moleculeX, moleculeY, 15, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const drawTranscription = (ctx, width, height, frame) => {
+    const helixY = height / 2;
+    const helixAmplitude = 50;
+    const helixFrequency = 0.05;
+    
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 8;
+    
+    for (let strand = 0; strand < 2; strand++) {
+      ctx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const y = helixY + Math.sin(x * helixFrequency + strand * Math.PI + frame * 0.05) * helixAmplitude;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    
+    const polymeraseX = 200 + (frame % 200) * 3;
+    const gradient = ctx.createRadialGradient(polymeraseX, helixY, 0, polymeraseX, helixY, 40);
+    gradient.addColorStop(0, '#10b981');
+    gradient.addColorStop(1, '#059669');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(polymeraseX, helixY, 40, 0, Math.PI * 2);
+    ctx.fill();
+    
+    if (frame > 30) {
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      for (let x = 0; x < polymeraseX - 200; x++) {
+        const y = helixY - 80 + Math.sin(x * 0.1) * 20;
+        if (x === 0) ctx.moveTo(200 + x, y);
+        else ctx.lineTo(200 + x, y);
+      }
+      ctx.stroke();
+    }
+  };
+
+  const drawMitosis = (ctx, width, height, frame) => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const phase = Math.floor(frame / 60) % 5;
+    
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 300, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    const chromosomes = 8;
+    
+    if (phase === 0) {
+      for (let i = 0; i < chromosomes; i++) {
+        const angle = (i / chromosomes) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * 100;
+        const y = centerY + Math.sin(angle) * 100;
+        
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(x - 10, y - 30, 20, 60);
+      }
+    } else if (phase === 1) {
+      for (let i = 0; i < chromosomes; i++) {
+        const x = centerX - 200 + (i * 400 / chromosomes);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(x, centerY - 30, 20, 60);
+      }
+    } else if (phase === 2) {
+      for (let i = 0; i < chromosomes / 2; i++) {
+        const x = centerX - 150 + (i * 300 / (chromosomes / 2));
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(x, centerY - 100, 15, 40);
+        ctx.fillRect(x, centerY + 60, 15, 40);
+      }
+    } else {
+      ctx.strokeStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY - 80, 150, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY + 80, 150, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+
+  const drawImmuneResponse = (ctx, width, height, frame) => {
+    const pathogens = 10;
+    for (let i = 0; i < pathogens; i++) {
+      const x = 100 + (i % 5) * 200 + Math.sin(frame * 0.1 + i) * 50;
+      const y = 200 + Math.floor(i / 5) * 300 + Math.cos(frame * 0.1 + i) * 50;
+      
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, 25);
+      gradient.addColorStop(0, '#ef4444');
+      gradient.addColorStop(1, '#dc2626');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, 25, 0, Math.PI * 2);
+      ctx.fill();
+      
+      for (let j = 0; j < 8; j++) {
+        const angle = (j / 8) * Math.PI * 2;
+        const sx = x + Math.cos(angle) * 35;
+        const sy = y + Math.sin(angle) * 35;
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(angle) * 25, y + Math.sin(angle) * 25);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+      }
+    }
+    
+    const tcells = 15;
+    for (let i = 0; i < tcells; i++) {
+      const x = 200 + (frame * 2 + i * 50) % width;
+      const y = 300 + Math.sin((frame + i * 20) * 0.05) * 200;
+      
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+      gradient.addColorStop(0, '#3b82f6');
+      gradient.addColorStop(1, '#1e40af');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  const drawNeuronSignaling = (ctx, width, height, frame) => {
+    const neuronX = 300;
+    const neuronY = height / 2;
+    
+    const gradient = ctx.createRadialGradient(neuronX, neuronY, 0, neuronX, neuronY, 80);
+    gradient.addColorStop(0, '#3b82f6');
+    gradient.addColorStop(1, '#1e40af');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(neuronX, neuronY, 80, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#1e40af';
+    ctx.beginPath();
+    ctx.arc(neuronX, neuronY, 40, 0, Math.PI * 2);
+    ctx.fill();
+    
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(neuronX + Math.cos(angle) * 80, neuronY + Math.sin(angle) * 80);
+      
+      for (let j = 0; j < 3; j++) {
+        const branchAngle = angle + (Math.random() - 0.5) * 0.5;
+        const branchX = neuronX + Math.cos(branchAngle) * (80 + j * 50);
+        const branchY = neuronY + Math.sin(branchAngle) * (80 + j * 50);
+        ctx.lineTo(branchX, branchY);
+      }
+      ctx.stroke();
+    }
+    
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.moveTo(neuronX + 80, neuronY);
+    ctx.lineTo(width - 200, neuronY);
+    ctx.stroke();
+    
+    const signalPos = ((frame * 10) % (width - neuronX - 280)) + neuronX + 80;
+    
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#fbbf24';
+    ctx.beginPath();
+    for (let x = signalPos - 50; x < signalPos + 50; x += 2) {
+      const y = neuronY + Math.sin((x - signalPos) * 0.3) * 30;
+      if (x === signalPos - 50) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  };
+
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div>
+      {/* Simulation Type Selector */}
+      <div className="module-selector">
+        {Object.entries(simulationTypes).map(([key, sim]) => (
+          <button
+            key={key}
+            className={`module-btn ${simulationType === key ? 'active' : ''}`}
+            onClick={() => setSimulationType(key)}
+            disabled={isSimulating}
+          >
+            <div className="module-icon">{sim.icon}</div>
+            <div className="module-title">{sim.name}</div>
+            <div className="module-desc">{sim.description}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Controls */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">🎮 Simulation Controls</h3>
+        </div>
+        
+        <div className="form-group">
+          <label className="form-label">Animation Speed: {animationSpeed}%</label>
+          <input
+            type="range"
+            className="form-input"
+            min="1"
+            max="100"
+            value={animationSpeed}
+            onChange={(e) => setAnimationSpeed(parseInt(e.target.value))}
+            style={{ width: '100%' }}
+          />
+        </div>
+
+        <div className="video-controls">
+          <button
+            className="btn btn-primary"
+            onClick={startSimulation}
+            disabled={isSimulating}
+          >
+            ▶️ Start
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={stopSimulation}
+            disabled={!isSimulating}
+          >
+            ⏹️ Stop
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={startRecording}
+            disabled={!isSimulating || isRecording}
+          >
+            ⏺️ Record
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={stopRecording}
+            disabled={!isRecording}
+          >
+            ⏹️ Stop Recording
+          </button>
+          <button
+            className="btn btn-success"
+            onClick={downloadVideo}
+            disabled={recordedChunks.length === 0}
+          >
+            💾 Download
+          </button>
+          
+          <div className="video-timeline">
+            <input
+              type="range"
+              min="0"
+              max={totalFrames}
+              value={currentFrame}
+              onChange={(e) => setCurrentFrame(parseInt(e.target.value))}
+              style={{ width: '100%' }}
+              disabled={isSimulating}
+            />
+          </div>
+          
+          <span className="frame-counter">
+            Frame: {currentFrame} / {totalFrames}
+          </span>
+        </div>
+
+        {isRecording && (
+          <div className="alert alert-danger" style={{ marginTop: '1rem' }}>
+            <span className="recording-indicator">
+              <span className="recording-dot"></span>
+              RECORDING - {formatDuration(recordingDuration)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Canvas */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">📺 Simulation View</h3>
+        </div>
+        <div className="canvas-container">
+          <canvas
+            ref={canvasRef}
+            width={1920}
+            height={1080}
+            style={{ width: '100%', maxWidth: '100%' }}
+          />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-4">
+        <div className="stat-card">
+          <div className="stat-value">{currentFrame}</div>
+          <div className="stat-label">Current Frame</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{totalFrames}</div>
+          <div className="stat-label">Total Frames</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{formatDuration(recordingDuration)}</div>
+          <div className="stat-label">Recording Duration</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">
+            {(recordedChunks.reduce((acc, chunk) => acc + chunk.size, 0) / (1024 * 1024)).toFixed(2)}
+          </div>
+          <div className="stat-label">File Size (MB)</div>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">ℹ️ Simulation Info</h3>
+        </div>
+        <div className="alert alert-info">
+          <div>
+            <strong>Current Simulation:</strong> {simulationTypes[simulationType].name}<br/>
+            <strong>Description:</strong> {simulationTypes[simulationType].description}<br/>
+            <strong>Resolution:</strong> 1920 × 1080 (Full HD)<br/>
+            <strong>Frame Rate:</strong> 30 FPS<br/>
+            <strong>Format:</strong> WebM (VP9 codec)
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// MAIN APPLICATION
+// ============================================================================
+
+const BioMedResearchSuitePro = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState([]);
+  const [activeModule, setActiveModule] = useState('workflow');
+  const [dockingResults, setDockingResults] = useState(null);
+  const [cellResults, setCellResults] = useState(null);
+
+  const handleDockingComplete = (results) => {
+    setDockingResults(results);
+    setCompletedSteps([...completedSteps, 1]);
+    setCurrentStep(2);
+  };
+
+  const handleCellComplete = (results) => {
+    setCellResults(results);
+    setCompletedSteps([...completedSteps, 2]);
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="app-header">
+        <div className="header-content">
+          <div className="brand">
+            <div className="brand-icon">🧬</div>
+            <div className="brand-text">
+              <h1>BioMed Research Suite Pro</h1>
+              <p>Ultimate Integrated Computational Biology Platform</p>
+            </div>
+          </div>
+          <div className="status-bar">
+            <div className="status-item">
+              <div className="status-dot"></div>
+              <span>System Active</span>
+            </div>
+            <div className="status-item">
+              <span>v2.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Container */}
+      <div className="container">
+        {/* Module Selector */}
+        <div className="module-selector">
+          <button
+            className={`module-btn ${activeModule === 'workflow' ? 'active' : ''}`}
+            onClick={() => setActiveModule('workflow')}
+          >
+            <div className="module-icon">🔄</div>
+            <div className="module-title">Integrated Workflow</div>
+            <div className="module-desc">Drug discovery pipeline</div>
+          </button>
+          <button
+            className={`module-btn ${activeModule === 'docking' ? 'active' : ''}`}
+            onClick={() => setActiveModule('docking')}
+          >
+            <div className="module-icon">⚛️</div>
+            <div className="module-title">Molecular Docking</div>
+            <div className="module-desc">Protein-ligand interactions</div>
+          </button>
+          <button
+            className={`module-btn ${activeModule === 'cells' ? 'active' : ''}`}
+            onClick={() => setActiveModule('cells')}
+          >
+            <div className="module-icon">🦠</div>
+            <div className="module-title">Cell Dynamics</div>
+            <div className="module-desc">Live cell simulation</div>
+          </button>
+          <button
+            className={`module-btn ${activeModule === 'video' ? 'active' : ''}`}
+            onClick={() => setActiveModule('video')}
+          >
+            <div className="module-icon">🎬</div>
+            <div className="module-title">Video Simulation</div>
+            <div className="module-desc">Biological process recording</div>
+          </button>
+        </div>
+
+        {/* Workflow Module */}
+        {activeModule === 'workflow' && (
+          <div>
+            {/* Workflow Navigation */}
+            <div className="workflow-nav">
+              <div className="workflow-steps">
+                <div 
+                  className={`workflow-step ${currentStep === 1 ? 'active' : ''} ${completedSteps.includes(1) ? 'completed' : ''}`}
+                  onClick={() => setCurrentStep(1)}
+                >
+                  <div className="step-circle">1</div>
+                  <div className="step-label">Molecular Docking</div>
+                </div>
+                <div 
+                  className={`workflow-step ${currentStep === 2 ? 'active' : ''} ${completedSteps.includes(2) ? 'completed' : ''}`}
+                  onClick={() => completedSteps.includes(1) && setCurrentStep(2)}
+                >
+                  <div className="step-circle">2</div>
+                  <div className="step-label">Cell Simulation</div>
+                </div>
+                <div 
+                  className={`workflow-step ${currentStep === 3 ? 'active' : ''} ${completedSteps.includes(3) ? 'completed' : ''}`}
+                >
+                  <div className="step-circle">3</div>
+                  <div className="step-label">Results & Analysis</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step Content */}
+            {currentStep === 1 && (
+              <div>
+                <div className="info-panel">
+                  <h2 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem'}}>
+                    Step 1: Molecular Docking Analysis
+                  </h2>
+                  <p style={{color: 'var(--muted)'}}>
+                    Perform protein-ligand docking to identify binding affinity and interaction profiles.
+                  </p>
+                </div>
+                <MolecularDockingModule onComplete={handleDockingComplete} />
+              </div>
+            )}
+
+            {currentStep === 2 && (
+              <div>
+                <div className="info-panel">
+                  <h2 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem'}}>
+                    Step 2: Cell-Based Validation
+                  </h2>
+                  <p style={{color: 'var(--muted)'}}>
+                    Simulate drug effects on live cell cultures based on docking predictions.
+                  </p>
+                </div>
+                <CellDynamicsModule 
+                  dockingResults={dockingResults} 
+                  onComplete={handleCellComplete}
+                />
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div className="info-panel" style={{
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                borderColor: 'rgba(16, 185, 129, 0.3)',
+                textAlign: 'center',
+                padding: '3rem'
+              }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+                <div style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--green)', marginBottom: '1rem' }}>
+                  Workflow Complete!
+                </div>
+                <div style={{ color: 'var(--text)', fontSize: '1.1rem', marginBottom: '2rem' }}>
+                  You've successfully completed the integrated drug discovery workflow from molecular docking through cell-based validation.
+                </div>
+                <div className="btn-group" style={{justifyContent: 'center'}}>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setCurrentStep(1);
+                      setCompletedSteps([]);
+                      setDockingResults(null);
+                      setCellResults(null);
+                    }}
+                  >
+                    🔄 Start New Analysis
+                  </button>
+                  <button 
+                    className="btn btn-success"
+                    onClick={() => {
+                      const completeReport = {
+                        docking: dockingResults,
+                        cellSimulation: cellResults,
+                        timestamp: new Date().toISOString(),
+                        workflow: 'complete'
+                      };
+                      exportToJSON(completeReport, 'integrated_workflow_complete_report.json');
+                    }}
+                  >
+                    📥 Download Complete Report
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Standalone Modules */}
+        {activeModule === 'docking' && <MolecularDockingModule />}
+        {activeModule === 'cells' && <CellDynamicsModule />}
+        {activeModule === 'video' && <VideoSimulationModule />}
+      </div>
+    </div>
+  );
+};
+
+// Render Application
+ReactDOM.render(<BioMedResearchSuitePro />, document.getElementById('root'));
+
+</body>
+</html>
